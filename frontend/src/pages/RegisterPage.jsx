@@ -200,10 +200,11 @@ const RegisterPage = () => {
       return;
     }
 
-    if (!phoneVerified) {
-      toast.error('Please verify your phone number');
-      return;
-    }
+    // Phone verification is optional
+    // if (!phoneVerified) {
+    //   toast.error('Please verify your phone number');
+    //   return;
+    // }
 
     if (!formData.registrationNo) {
       toast.error('Medical Registration Number is required');
@@ -226,7 +227,7 @@ const RegisterPage = () => {
       await register({
         ...formData,
         emailVerified: true,
-        phoneVerified: true
+        phoneVerified: phoneVerified || false  // Optional
       });
       toast.success('Registration successful! Your license is pending verification.');
       navigate('/dashboard');

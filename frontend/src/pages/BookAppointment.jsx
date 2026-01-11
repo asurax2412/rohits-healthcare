@@ -189,10 +189,11 @@ const BookAppointment = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!phoneVerified) {
-      toast.error('Please verify your phone number first');
-      return;
-    }
+    // Phone verification is optional
+    // if (!phoneVerified) {
+    //   toast.error('Please verify your phone number first');
+    //   return;
+    // }
 
     setLoading(true);
 

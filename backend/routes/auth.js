@@ -23,9 +23,10 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ message: 'Please verify your email address' });
     }
 
-    if (!phoneVerified) {
-      return res.status(400).json({ message: 'Please verify your phone number' });
-    }
+    // Phone verification is optional
+    // if (!phoneVerified) {
+    //   return res.status(400).json({ message: 'Please verify your phone number' });
+    // }
 
     // Check if user exists
     const existingUser = await User.findOne({ email });
