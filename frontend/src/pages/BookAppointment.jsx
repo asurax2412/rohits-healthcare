@@ -152,8 +152,10 @@ const BookAppointment = () => {
       setEmailOtpSent(true);
       
       // Show OTP in dev mode for testing (remove in production!)
+      // Show OTP in alert for better visibility
       if (response.data.otp) {
-        toast.success(`📧 DEV MODE - Your OTP is: ${response.data.otp}`, { autoClose: 15000 });
+        alert(`Your OTP is: ${response.data.otp}`);
+        toast.success(`📧 Your OTP is: ${response.data.otp}`, { autoClose: 30000 });
       } else {
         toast.success('OTP sent to your email!');
       }
