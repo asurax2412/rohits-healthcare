@@ -45,18 +45,20 @@ router.post('/send-phone', async (req, res) => {
     const otp = await OTP.createOTP(cleanPhone, 'phone', purpose || 'verification');
     log(4, `OTP Generated: ${otp} for phone: ${cleanPhone}`);
     
-    // Send SMS
-    log(5, 'Sending SMS...');
-    const smsResult = await sendOTPSMS(cleanPhone, otp);
-    log(6, 'SMS Result:', smsResult);
-    
-    log(7, '✅ SUCCESS - Sending response with OTP');
+    // Send response immediately with OTP (don't wait for SMS)
+    log(5, '✅ SUCCESS - Sending response with OTP');
     res.json({ 
-      message: 'OTP sent to your phone',
+      message: 'OTP generated successfully',
       success: true,
       // Always show OTP for testing (REMOVE IN PRODUCTION!)
       otp: otp
     });
+
+    // Try to send SMS in background (don't await)
+    log(6, 'Sending SMS in background...');
+    sendOTPSMS(cleanPhone, otp)
+      .then(result => log(7, 'SMS Result:', result))
+      .catch(err => log(7, 'SMS failed (non-blocking):', err.message));
   } catch (error) {
     logError('PHONE-OTP', 'Failed to send phone OTP', error);
     res.status(500).json({ message: 'Failed to send OTP', error: error.message });
@@ -88,18 +90,20 @@ router.post('/send-email', async (req, res) => {
     const otp = await OTP.createOTP(email.toLowerCase(), 'email', purpose || 'verification');
     log(4, `OTP Generated: ${otp} for email: ${email}`);
     
-    // Send Email
-    log(5, 'Sending Email...');
-    const emailResult = await sendOTPEmail(email, otp, name);
-    log(6, 'Email Result:', emailResult);
-    
-    log(7, '✅ SUCCESS - Sending response with OTP');
+    // Send response immediately with OTP (don't wait for email)
+    log(5, '✅ SUCCESS - Sending response with OTP');
     res.json({ 
-      message: 'OTP sent to your email',
+      message: 'OTP generated successfully',
       success: true,
       // Always show OTP for testing (REMOVE IN PRODUCTION!)
       otp: otp
     });
+
+    // Try to send email in background (don't await)
+    log(6, 'Sending Email in background...');
+    sendOTPEmail(email, otp, name)
+      .then(result => log(7, 'Email Result:', result))
+      .catch(err => log(7, 'Email failed (non-blocking):', err.message));
   } catch (error) {
     logError('EMAIL-OTP', 'Failed to send email OTP', error);
     res.status(500).json({ message: 'Failed to send OTP', error: error.message });
