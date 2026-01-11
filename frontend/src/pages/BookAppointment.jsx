@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import axios from 'axios';
+import api from '../utils/api';
 import toast from 'react-hot-toast';
 import { 
   Calendar, 
@@ -94,7 +94,7 @@ const BookAppointment = () => {
 
     setSendingPhoneOtp(true);
     try {
-      const response = await axios.post('/api/otp/send-phone', {
+      const response = await api.post('/otp/send-phone', {
         phone: formData.patientPhone,
         purpose: 'appointment'
       });
@@ -122,7 +122,7 @@ const BookAppointment = () => {
 
     setVerifyingPhone(true);
     try {
-      await axios.post('/api/otp/verify-phone', {
+      await api.post('/otp/verify-phone', {
         phone: formData.patientPhone,
         otp: phoneOtp
       });
@@ -144,7 +144,7 @@ const BookAppointment = () => {
 
     setSendingEmailOtp(true);
     try {
-      const response = await axios.post('/api/otp/send-email', {
+      const response = await api.post('/otp/send-email', {
         email: formData.patientEmail,
         name: formData.patientName,
         purpose: 'appointment'
@@ -173,7 +173,7 @@ const BookAppointment = () => {
 
     setVerifyingEmail(true);
     try {
-      await axios.post('/api/otp/verify-email', {
+      await api.post('/otp/verify-email', {
         email: formData.patientEmail,
         otp: emailOtp
       });
@@ -197,7 +197,7 @@ const BookAppointment = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post('/api/appointments/book', {
+      const response = await api.post('/appointments/book', {
         ...formData,
         phoneVerified,
         emailVerified

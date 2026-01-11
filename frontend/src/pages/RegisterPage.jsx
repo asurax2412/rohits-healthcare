@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
+import api from '../utils/api';
 import { 
   Stethoscope, Mail, Lock, User, Phone, Building, MapPin, FileText, 
   Eye, EyeOff, ArrowRight, CheckCircle, Shield, Loader2, AlertCircle 
@@ -95,7 +95,7 @@ const RegisterPage = () => {
 
     setSendingEmailOtp(true);
     try {
-      const response = await axios.post('/api/otp/send-email', {
+      const response = await api.post('/otp/send-email', {
         email: formData.email,
         name: formData.name || 'Doctor',
         purpose: 'doctor-registration'
@@ -124,7 +124,7 @@ const RegisterPage = () => {
 
     setVerifyingEmail(true);
     try {
-      await axios.post('/api/otp/verify-email', {
+      await api.post('/otp/verify-email', {
         email: formData.email,
         otp: emailOtp
       });
@@ -146,7 +146,7 @@ const RegisterPage = () => {
 
     setSendingPhoneOtp(true);
     try {
-      const response = await axios.post('/api/otp/send-phone', {
+      const response = await api.post('/otp/send-phone', {
         phone: formData.phone,
         purpose: 'doctor-registration'
       });
@@ -174,7 +174,7 @@ const RegisterPage = () => {
 
     setVerifyingPhone(true);
     try {
-      await axios.post('/api/otp/verify-phone', {
+      await api.post('/otp/verify-phone', {
         phone: formData.phone,
         otp: phoneOtp
       });
