@@ -396,7 +396,7 @@ const BookAppointment = () => {
                 {/* Phone with OTP Verification */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Phone Number <span className="text-red-500">*</span>
+                    Phone Number <span className="text-gray-400 font-normal">(Optional)</span>
                     {phoneVerified && (
                       <span className="ml-2 text-green-600 text-xs">✓ Verified</span>
                     )}
@@ -413,7 +413,6 @@ const BookAppointment = () => {
                           disabled={phoneVerified}
                           className={`w-full pl-12 pr-4 py-3 rounded-xl border ${phoneVerified ? 'bg-green-50 border-green-300' : 'border-gray-200'} focus:border-medical-teal`}
                           placeholder="+91 XXXXXXXXXX"
-                          required
                         />
                       </div>
                       {!phoneVerified && (

@@ -407,9 +407,11 @@ const RegisterPage = () => {
                 </div>
               </div>
 
-              {/* Phone with OTP */}
+              {/* Phone with OTP - Optional */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Phone Number <span className="text-gray-400 font-normal">(Optional)</span>
+                </label>
                 <div className="relative">
                   <Phone className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <input
@@ -420,7 +422,6 @@ const RegisterPage = () => {
                     disabled={phoneVerified}
                     className={`w-full pl-12 pr-24 py-3.5 rounded-xl border ${phoneVerified ? 'bg-green-50 border-green-300' : 'border-gray-200'} focus:border-medical-teal focus:ring-2 focus:ring-medical-teal/20`}
                     placeholder="+91-XXXXXXXXXX"
-                    required
                   />
                   {phoneVerified ? (
                     <div className="absolute right-4 top-1/2 transform -translate-y-1/2 flex items-center gap-1 text-green-600">
