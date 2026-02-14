@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 import { 
   Stethoscope, Mail, Lock, User, Phone, Building, MapPin, FileText, 
-  Eye, EyeOff, ArrowRight, CheckCircle, Shield, Loader2, AlertCircle 
+  Eye, EyeOff, ArrowRight, Shield, Loader2, AlertCircle 
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -25,19 +25,6 @@ const RegisterPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
-  
-  // OTP States
-  const [emailOtpSent, setEmailOtpSent] = useState(false);
-  const [emailVerified, setEmailVerified] = useState(false);
-  const [emailOtp, setEmailOtp] = useState('');
-  const [sendingEmailOtp, setSendingEmailOtp] = useState(false);
-  const [verifyingEmail, setVerifyingEmail] = useState(false);
-  
-  const [phoneOtpSent, setPhoneOtpSent] = useState(false);
-  const [phoneVerified, setPhoneVerified] = useState(false);
-  const [phoneOtp, setPhoneOtp] = useState('');
-  const [sendingPhoneOtp, setSendingPhoneOtp] = useState(false);
-  const [verifyingPhone, setVerifyingPhone] = useState(false);
   
   const { register } = useAuth();
   const navigate = useNavigate();
@@ -72,121 +59,6 @@ const RegisterPage = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-    
-    // Reset verification if email/phone changes
-    if (name === 'email') {
-      setEmailVerified(false);
-      setEmailOtpSent(false);
-      setEmailOtp('');
-    }
-    if (name === 'phone') {
-      setPhoneVerified(false);
-      setPhoneOtpSent(false);
-      setPhoneOtp('');
-    }
-  };
-
-  // Send Email OTP
-  const sendEmailOtp = async () => {
-    if (!formData.email || !formData.email.includes('@')) {
-      toast.error('Please enter a valid email address');
-      return;
-    }
-
-    setSendingEmailOtp(true);
-    try {
-      const response = await api.post('/otp/send-email', {
-        email: formData.email,
-        name: formData.name || 'Doctor',
-        purpose: 'doctor-registration'
-      });
-      setEmailOtpSent(true);
-      
-      // Show OTP in dev mode
-      // Show OTP in alert for better visibility
-      if (response.data.otp) {
-        alert(`Your OTP is: ${response.data.otp}`);
-        toast.success(`📧 Your OTP is: ${response.data.otp}`, { duration: 30000 });
-      } else {
-        toast.success('OTP sent to your email!');
-      }
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to send OTP');
-    } finally {
-      setSendingEmailOtp(false);
-    }
-  };
-
-  // Verify Email OTP
-  const verifyEmailOtp = async () => {
-    if (!emailOtp || emailOtp.length !== 6) {
-      toast.error('Please enter 6-digit OTP');
-      return;
-    }
-
-    setVerifyingEmail(true);
-    try {
-      await api.post('/otp/verify-email', {
-        email: formData.email,
-        otp: emailOtp
-      });
-      setEmailVerified(true);
-      toast.success('Email verified successfully!');
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Invalid OTP');
-    } finally {
-      setVerifyingEmail(false);
-    }
-  };
-
-  // Send Phone OTP
-  const sendPhoneOtp = async () => {
-    if (!formData.phone || formData.phone.length < 10) {
-      toast.error('Please enter a valid phone number');
-      return;
-    }
-
-    setSendingPhoneOtp(true);
-    try {
-      const response = await api.post('/otp/send-phone', {
-        phone: formData.phone,
-        purpose: 'doctor-registration'
-      });
-      setPhoneOtpSent(true);
-      
-      // Show OTP in dev mode
-      if (response.data.otp) {
-        toast.success(`📱 DEV MODE - Your OTP is: ${response.data.otp}`, { duration: 15000 });
-      } else {
-        toast.success('OTP sent to your phone!');
-      }
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to send OTP');
-    } finally {
-      setSendingPhoneOtp(false);
-    }
-  };
-
-  // Verify Phone OTP
-  const verifyPhoneOtp = async () => {
-    if (!phoneOtp || phoneOtp.length !== 6) {
-      toast.error('Please enter 6-digit OTP');
-      return;
-    }
-
-    setVerifyingPhone(true);
-    try {
-      await api.post('/otp/verify-phone', {
-        phone: formData.phone,
-        otp: phoneOtp
-      });
-      setPhoneVerified(true);
-      toast.success('Phone verified successfully!');
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Invalid OTP');
-    } finally {
-      setVerifyingPhone(false);
-    }
   };
 
   const handleSubmit = async (e) => {
@@ -196,17 +68,6 @@ const RegisterPage = () => {
       toast.error('Passwords do not match');
       return;
     }
-
-    if (!emailVerified) {
-      toast.error('Please verify your email address');
-      return;
-    }
-
-    // Phone verification is optional
-    // if (!phoneVerified) {
-    //   toast.error('Please verify your phone number');
-    //   return;
-    // }
 
     if (!formData.registrationNo) {
       toast.error('Medical Registration Number is required');
@@ -229,7 +90,7 @@ const RegisterPage = () => {
       await register({
         ...formData,
         emailVerified: true,
-        phoneVerified: phoneVerified || false  // Optional
+        phoneVerified: true
       });
       toast.success('Registration successful! Your license is pending verification.');
       navigate('/dashboard');
@@ -314,7 +175,7 @@ const RegisterPage = () => {
                 </div>
               </div>
 
-              {/* Email with OTP */}
+              {/* Email */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
                 <div className="relative">
@@ -324,47 +185,11 @@ const RegisterPage = () => {
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    disabled={emailVerified}
-                    className={`w-full pl-12 pr-24 py-3.5 rounded-xl border ${emailVerified ? 'bg-green-50 border-green-300' : 'border-gray-200'} focus:border-medical-teal focus:ring-2 focus:ring-medical-teal/20`}
+                    className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-gray-200 focus:border-medical-teal focus:ring-2 focus:ring-medical-teal/20"
                     placeholder="doctor@example.com"
                     required
                   />
-                  {emailVerified ? (
-                    <div className="absolute right-4 top-1/2 transform -translate-y-1/2 flex items-center gap-1 text-green-600">
-                      <CheckCircle className="w-5 h-5" />
-                      <span className="text-sm font-medium">Verified</span>
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={sendEmailOtp}
-                      disabled={sendingEmailOtp || !formData.email}
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 px-3 py-1.5 bg-medical-teal text-white rounded-lg text-sm font-medium hover:bg-opacity-90 disabled:opacity-50"
-                    >
-                      {sendingEmailOtp ? <Loader2 className="w-4 h-4 animate-spin" /> : emailOtpSent ? 'Resend' : 'Verify'}
-                    </button>
-                  )}
                 </div>
-                {emailOtpSent && !emailVerified && (
-                  <div className="flex gap-2 mt-2">
-                    <input
-                      type="text"
-                      value={emailOtp}
-                      onChange={(e) => setEmailOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                      className="flex-1 px-4 py-2.5 rounded-lg border border-gray-200 focus:border-medical-teal text-center text-lg tracking-widest"
-                      placeholder="Enter 6-digit OTP"
-                      maxLength={6}
-                    />
-                    <button
-                      type="button"
-                      onClick={verifyEmailOtp}
-                      disabled={verifyingEmail || emailOtp.length !== 6}
-                      className="px-4 py-2 bg-medical-navy text-white rounded-lg font-medium hover:bg-opacity-90 disabled:opacity-50"
-                    >
-                      {verifyingEmail ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Verify'}
-                    </button>
-                  </div>
-                )}
               </div>
 
               {/* Password */}
@@ -409,10 +234,10 @@ const RegisterPage = () => {
                 </div>
               </div>
 
-              {/* Phone with OTP - Optional */}
+              {/* Phone */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Phone Number <span className="text-gray-400 font-normal">(Optional)</span>
+                  Phone Number
                 </label>
                 <div className="relative">
                   <Phone className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -421,46 +246,10 @@ const RegisterPage = () => {
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    disabled={phoneVerified}
-                    className={`w-full pl-12 pr-24 py-3.5 rounded-xl border ${phoneVerified ? 'bg-green-50 border-green-300' : 'border-gray-200'} focus:border-medical-teal focus:ring-2 focus:ring-medical-teal/20`}
+                    className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-gray-200 focus:border-medical-teal focus:ring-2 focus:ring-medical-teal/20"
                     placeholder="+91-XXXXXXXXXX"
                   />
-                  {phoneVerified ? (
-                    <div className="absolute right-4 top-1/2 transform -translate-y-1/2 flex items-center gap-1 text-green-600">
-                      <CheckCircle className="w-5 h-5" />
-                      <span className="text-sm font-medium">Verified</span>
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={sendPhoneOtp}
-                      disabled={sendingPhoneOtp || !formData.phone}
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 px-3 py-1.5 bg-medical-teal text-white rounded-lg text-sm font-medium hover:bg-opacity-90 disabled:opacity-50"
-                    >
-                      {sendingPhoneOtp ? <Loader2 className="w-4 h-4 animate-spin" /> : phoneOtpSent ? 'Resend' : 'Verify'}
-                    </button>
-                  )}
                 </div>
-                {phoneOtpSent && !phoneVerified && (
-                  <div className="flex gap-2 mt-2">
-                    <input
-                      type="text"
-                      value={phoneOtp}
-                      onChange={(e) => setPhoneOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                      className="flex-1 px-4 py-2.5 rounded-lg border border-gray-200 focus:border-medical-teal text-center text-lg tracking-widest"
-                      placeholder="Enter 6-digit OTP"
-                      maxLength={6}
-                    />
-                    <button
-                      type="button"
-                      onClick={verifyPhoneOtp}
-                      disabled={verifyingPhone || phoneOtp.length !== 6}
-                      className="px-4 py-2 bg-medical-navy text-white rounded-lg font-medium hover:bg-opacity-90 disabled:opacity-50"
-                    >
-                      {verifyingPhone ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Verify'}
-                    </button>
-                  </div>
-                )}
               </div>
 
               {/* Specialization */}
@@ -577,7 +366,7 @@ const RegisterPage = () => {
 
             <button
               type="submit"
-              disabled={loading || !emailVerified || !phoneVerified || !agreeTerms}
+              disabled={loading || !agreeTerms}
               className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-medical-teal text-white font-semibold hover:bg-opacity-90 transition-all shadow-lg shadow-medical-teal/30 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
@@ -589,12 +378,6 @@ const RegisterPage = () => {
                 </>
               )}
             </button>
-
-            {(!emailVerified || !phoneVerified) && (
-              <p className="text-center text-amber-600 text-sm">
-                Please verify your email and phone number to continue
-              </p>
-            )}
           </form>
 
           <p className="mt-8 text-center text-gray-600">

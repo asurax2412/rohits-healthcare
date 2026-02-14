@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import api from '../utils/api';
+import toast from 'react-hot-toast';
 import { 
   Stethoscope, 
   Heart, 
@@ -19,11 +21,20 @@ import {
   Award,
   Users,
   Calendar,
-  FileText
+  FileText,
+  MessageSquare,
+  Send,
+  ThumbsUp
 } from 'lucide-react';
 
 const LandingPage = () => {
   const [scrolled, setScrolled] = useState(false);
+  const [dynamicFeedbacks, setDynamicFeedbacks] = useState([]);
+  const [feedbackStats, setFeedbackStats] = useState({ averageRating: 0, totalReviews: 0 });
+  const [feedbackForm, setFeedbackForm] = useState({ name: '', email: '', rating: 5, message: '' });
+  const [hoverRating, setHoverRating] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -32,6 +43,43 @@ const LandingPage = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Fetch dynamic feedbacks
+  useEffect(() => {
+    fetchFeedbacks();
+  }, []);
+
+  const fetchFeedbacks = async () => {
+    try {
+      const res = await api.get('/feedback');
+      setDynamicFeedbacks(res.data.feedbacks);
+      setFeedbackStats(res.data.stats);
+    } catch (err) {
+      // Silently fail — hardcoded testimonials still show
+      console.log('Could not fetch feedbacks:', err.message);
+    }
+  };
+
+  const handleFeedbackSubmit = async (e) => {
+    e.preventDefault();
+    if (!feedbackForm.name || !feedbackForm.message) {
+      toast.error('Please fill in your name and message');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await api.post('/feedback', feedbackForm);
+      toast.success('Thank you for your feedback!');
+      setFeedbackForm({ name: '', email: '', rating: 5, message: '' });
+      setSubmitted(true);
+      fetchFeedbacks(); // refresh the list
+      setTimeout(() => setSubmitted(false), 4000);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to submit feedback');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const services = [
     {
@@ -67,9 +115,9 @@ const LandingPage = () => {
   ];
 
   const stats = [
-    { number: '15+', label: 'Years Experience' },
-    { number: '10K+', label: 'Happy Patients' },
-    { number: '25+', label: 'Specializations' },
+    { number: '5+', label: 'Years Experience' },
+    { number: '1000+', label: 'Happy Patients' },
+    { number: '10+', label: 'Specializations' },
     { number: '4.9', label: 'Rating', icon: Star },
   ];
 
@@ -188,22 +236,22 @@ const LandingPage = () => {
                     </div>
                     <div>
                       <h3 className="text-xl font-heading font-bold text-medical-navy">Dr. Rohit</h3>
-                      <p className="text-gray-500">General Physician</p>
+                      <p className="text-gray-500">Physiotherapist</p>
                     </div>
                   </div>
                   
                   <div className="space-y-4 mb-6">
                     <div className="flex items-center gap-3 text-gray-600">
                       <CheckCircle2 className="w-5 h-5 text-medical-teal" />
-                      <span>MBBS, MD - General Medicine</span>
+                      <span>BPT - Physiotherapy</span>
                     </div>
                     <div className="flex items-center gap-3 text-gray-600">
                       <CheckCircle2 className="w-5 h-5 text-medical-teal" />
-                      <span>15+ Years of Experience</span>
+                      <span>5+ Years of Experience</span>
                     </div>
                     <div className="flex items-center gap-3 text-gray-600">
                       <CheckCircle2 className="w-5 h-5 text-medical-teal" />
-                      <span>10,000+ Happy Patients</span>
+                      <span>Currently at Max Patparganj</span>
                     </div>
                   </div>
 
@@ -305,9 +353,9 @@ const LandingPage = () => {
                 Dedicated to Your Health and Well-being
               </h2>
               <p className="text-gray-600 mb-6">
-                With over 15 years of experience in healthcare, we have been serving patients with 
-                dedication and compassion. Our state-of-the-art facilities and expert medical team 
-                ensure you receive the best possible care.
+                With over 5 years of experience in physiotherapy, we have been serving patients with 
+                dedication and compassion. Our state-of-the-art facilities and expert care 
+                ensure you receive the best possible treatment.
               </p>
               <p className="text-gray-600 mb-8">
                 We believe in personalized healthcare that addresses your unique needs. From routine 
@@ -362,13 +410,13 @@ const LandingPage = () => {
                     <Stethoscope className="w-16 h-16 text-white" />
                   </div>
                   <div className="h-32 bg-medical-cream rounded-2xl p-6 flex flex-col justify-center">
-                    <p className="text-3xl font-heading font-bold text-medical-navy">15+</p>
+                    <p className="text-3xl font-heading font-bold text-medical-navy">5+</p>
                     <p className="text-gray-500">Years of Service</p>
                   </div>
                 </div>
                 <div className="space-y-4 pt-8">
                   <div className="h-32 bg-medical-cream rounded-2xl p-6 flex flex-col justify-center">
-                    <p className="text-3xl font-heading font-bold text-medical-navy">10K+</p>
+                    <p className="text-3xl font-heading font-bold text-medical-navy">1000+</p>
                     <p className="text-gray-500">Happy Patients</p>
                   </div>
                   <div className="h-48 bg-gradient-to-br from-medical-mint to-medical-teal rounded-2xl flex items-center justify-center">
@@ -420,6 +468,189 @@ const LandingPage = () => {
         </div>
       </section>
 
+      {/* Dynamic Customer Feedback Section */}
+      <section id="feedback" className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <span className="inline-block px-4 py-2 rounded-full bg-medical-teal/10 text-medical-teal font-medium text-sm mb-4">
+              <MessageSquare className="w-4 h-4 inline mr-1" />
+              Customer Feedback
+            </span>
+            <h2 className="text-3xl md:text-4xl font-heading font-bold text-medical-navy mb-4">
+              Share Your Experience
+            </h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Your feedback helps us improve our services. Tell us about your experience and help others make informed decisions.
+            </p>
+
+            {/* Dynamic Stats Bar */}
+            {feedbackStats.totalReviews > 0 && (
+              <div className="mt-8 inline-flex items-center gap-6 bg-medical-cream rounded-2xl px-8 py-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-3xl font-heading font-bold text-medical-navy">{feedbackStats.averageRating}</span>
+                  <Star className="w-7 h-7 text-yellow-400 fill-yellow-400" />
+                </div>
+                <div className="w-px h-10 bg-gray-300"></div>
+                <div className="text-left">
+                  <p className="text-sm text-gray-500">Based on</p>
+                  <p className="font-semibold text-medical-navy">{feedbackStats.totalReviews} review{feedbackStats.totalReviews !== 1 ? 's' : ''}</p>
+                </div>
+                <div className="w-px h-10 bg-gray-300"></div>
+                <div className="flex gap-0.5">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star
+                      key={star}
+                      className={`w-5 h-5 ${star <= Math.round(feedbackStats.averageRating) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="grid lg:grid-cols-5 gap-12">
+            {/* Feedback Form */}
+            <div className="lg:col-span-2">
+              <div className="bg-medical-cream rounded-3xl p-8 sticky top-32">
+                {submitted ? (
+                  <div className="text-center py-12">
+                    <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
+                      <ThumbsUp className="w-10 h-10 text-green-500" />
+                    </div>
+                    <h3 className="text-xl font-heading font-bold text-medical-navy mb-2">Thank You!</h3>
+                    <p className="text-gray-600">Your feedback has been submitted successfully.</p>
+                  </div>
+                ) : (
+                  <>
+                    <h3 className="text-xl font-heading font-bold text-medical-navy mb-6">Leave Your Feedback</h3>
+                    <form onSubmit={handleFeedbackSubmit} className="space-y-5">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Name *</label>
+                        <input
+                          type="text"
+                          value={feedbackForm.name}
+                          onChange={(e) => setFeedbackForm({ ...feedbackForm, name: e.target.value })}
+                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-medical-teal focus:ring-2 focus:ring-medical-teal/20 outline-none transition-all"
+                          placeholder="Your name"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Email (optional)</label>
+                        <input
+                          type="email"
+                          value={feedbackForm.email}
+                          onChange={(e) => setFeedbackForm({ ...feedbackForm, email: e.target.value })}
+                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-medical-teal focus:ring-2 focus:ring-medical-teal/20 outline-none transition-all"
+                          placeholder="your@email.com"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Rating *</label>
+                        <div className="flex gap-2">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <button
+                              key={star}
+                              type="button"
+                              onMouseEnter={() => setHoverRating(star)}
+                              onMouseLeave={() => setHoverRating(0)}
+                              onClick={() => setFeedbackForm({ ...feedbackForm, rating: star })}
+                              className="transition-transform hover:scale-125"
+                            >
+                              <Star
+                                className={`w-8 h-8 transition-colors ${
+                                  star <= (hoverRating || feedbackForm.rating)
+                                    ? 'text-yellow-400 fill-yellow-400'
+                                    : 'text-gray-300'
+                                }`}
+                              />
+                            </button>
+                          ))}
+                          <span className="ml-2 text-sm text-gray-500 self-center">
+                            {feedbackForm.rating}/5
+                          </span>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Your Experience *</label>
+                        <textarea
+                          rows="4"
+                          value={feedbackForm.message}
+                          onChange={(e) => setFeedbackForm({ ...feedbackForm, message: e.target.value })}
+                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-medical-teal focus:ring-2 focus:ring-medical-teal/20 outline-none resize-none transition-all"
+                          placeholder="Tell us about your experience..."
+                          required
+                        ></textarea>
+                      </div>
+                      <button
+                        type="submit"
+                        disabled={submitting}
+                        className="w-full py-4 rounded-xl bg-medical-teal text-white font-semibold hover:bg-opacity-90 transition-all shadow-lg shadow-medical-teal/30 flex items-center justify-center gap-2 disabled:opacity-60"
+                      >
+                        {submitting ? (
+                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                          <>
+                            <Send className="w-4 h-4" />
+                            Submit Feedback
+                          </>
+                        )}
+                      </button>
+                    </form>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Dynamic Feedback Cards */}
+            <div className="lg:col-span-3">
+              {dynamicFeedbacks.length > 0 ? (
+                <div className="space-y-6">
+                  {dynamicFeedbacks.map((fb) => (
+                    <div key={fb._id} className="bg-medical-cream rounded-2xl p-6 card-hover border border-gray-100">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-11 h-11 rounded-full bg-medical-teal/20 flex items-center justify-center text-medical-teal font-bold text-lg">
+                            {fb.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <p className="font-semibold text-medical-navy">{fb.name}</p>
+                            <p className="text-xs text-gray-400">
+                              {new Date(fb.createdAt).toLocaleDateString('en-IN', {
+                                day: 'numeric', month: 'short', year: 'numeric'
+                              })}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex gap-0.5">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              className={`w-4 h-4 ${star <= fb.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      <p className="text-gray-600 leading-relaxed">{fb.message}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-20 text-center">
+                  <div className="w-20 h-20 rounded-full bg-medical-cream flex items-center justify-center mb-4">
+                    <MessageSquare className="w-10 h-10 text-gray-300" />
+                  </div>
+                  <h3 className="text-xl font-heading font-bold text-gray-400 mb-2">No Feedback Yet</h3>
+                  <p className="text-gray-400 max-w-sm">
+                    Be the first to share your experience! Your feedback helps us serve you better.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Contact Section */}
       <section id="contact" className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -443,7 +674,7 @@ const LandingPage = () => {
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Phone</p>
-                    <p className="text-lg font-semibold text-medical-navy">+91-11-43033333</p>
+                    <p className="text-lg font-semibold text-medical-navy">+91-8448812340</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
@@ -452,7 +683,7 @@ const LandingPage = () => {
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Address</p>
-                    <p className="text-lg font-semibold text-medical-navy">108-A, Indraprastha Extension, Patparganj, Delhi-110 092</p>
+                    <p className="text-lg font-semibold text-medical-navy">Max Hospital, Patparganj, Delhi</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
@@ -535,7 +766,7 @@ const LandingPage = () => {
               <ArrowRight className="w-5 h-5" />
             </Link>
             <a
-              href="tel:+911143033333"
+              href="tel:+918448812340"
               className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl border-2 border-white text-white font-semibold hover:bg-white/10 transition-all"
             >
               <Phone className="w-5 h-5" />

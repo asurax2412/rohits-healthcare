@@ -19,14 +19,7 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ message: 'Medical Registration Number and Medical Council are required' });
     }
 
-    if (!emailVerified) {
-      return res.status(400).json({ message: 'Please verify your email address' });
-    }
-
-    // Phone verification is optional
-    // if (!phoneVerified) {
-    //   return res.status(400).json({ message: 'Please verify your phone number' });
-    // }
+    // OTP verification removed - no longer required
 
     // Check if user exists
     const existingUser = await User.findOne({ email });
