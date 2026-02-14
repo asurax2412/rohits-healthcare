@@ -131,7 +131,7 @@ const LandingPage = () => {
     {
       name: 'Rahul Verma',
       role: 'Patient',
-      content: 'The best healthcare experience I\'ve had. The prescription system is so organized and the follow-up care is excellent.',
+      content: 'Outstanding care from start to finish. The treatment plan was thorough, and the regular follow-ups made my recovery so much smoother.',
       rating: 5
     },
     {
