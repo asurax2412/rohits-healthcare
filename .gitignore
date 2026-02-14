@@ -28,3 +28,7 @@ Thumbs.db
 *.tmp
 *.temp
 
+# Personal/local docs
+INTERVIEW.md
+DEPLOYMENT.md
+
